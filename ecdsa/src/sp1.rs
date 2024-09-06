@@ -157,8 +157,15 @@ fn recover_ecdsa_unconstrained(sig: &[u8; 65], msg_hash: &[u8; 32]) -> ([u8; 33]
     unconstrained! {
         let mut buf = [0; 65 + 32];
         let (buf_sig, buf_msg_hash) = buf.split_at_mut(sig.len());
-        buf_sig.copy_from_slice(sig);
-        buf_msg_hash.copy_from_slice(msg_hash);
+        for i in 0..65 {
+            buf_sig[i] = core::intrinsics::black_box(sig[i]);
+        }
+
+        for i in 0..32 {
+            buf_msg_hash[i] =  core::intrinsics::black_box(msg_hash[i]);
+        }
+        //buf_sig.copy_from_slice(sig);
+        //buf_msg_hash.copy_from_slice(msg_hash);
         io::write(FD_ECRECOVER_HOOK, &buf);
     }
 
